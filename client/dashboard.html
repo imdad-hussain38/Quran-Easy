@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="container">
+    <h2>📘 Student Dashboard</h2>
+
+    <a href="index.html"><button class="btn home-btn">🏠 Go to Home Page</button></a>
+    <button onclick="logout()" class="btn logout-btn">📜 Logout</button>
+
+    <form id="callForm" style="margin-top: 20px;">
+      <input type="text" id="roomId" placeholder="Enter Room ID" required />
+      <button type="submit" class="btn call-btn">📞 Start Video Call</button>
+    </form>
+  </div>
+
+  <script>
+    // 🔐 Redirect to login if not authenticated
+    if (!localStorage.getItem("authToken")) {
+      window.location.href = "/login.html";
+    }
+
+    // 🧠 Make sure only students can access this page
+    const role = localStorage.getItem("userRole");
+    if (!role || role !== "student") {
+      window.location.href = "/login.html";
+    }
+
+    // 🚪 Logout function
+    function logout() {
+      localStorage.clear();
+      alert("You have been logged out.");
+      window.location.href = "/login.html";
+    }
+
+    // 📞 Handle call form
+    document.getElementById("callForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const roomId = document.getElementById("roomId").value.trim();
+      if (roomId) {
+        window.location.href = `/video-call.html?room=${roomId}`;
+      } else {
+        alert("Please enter a valid Room ID.");
+      }
+    });
+  </script>
+</body>
+</html>

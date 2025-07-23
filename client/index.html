@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quran Learn Easy - Home</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background-color: #f9f9f9; }
+    header {
+      background-color: #005f73;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    nav a {
+      color: white;
+      margin-left: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+    }
+    .search-bar input {
+      padding: 5px;
+      border-radius: 4px;
+      border: none;
+      margin-left: 15px;
+    }
+    main {
+      padding: 40px;
+      text-align: center;
+    }
+    section {
+      margin-top: 30px;
+    }
+    section a {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #94d2bd;
+      color: #000;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    section a:hover {
+      background-color: #52b69a;
+      color: white;
+    }
+    #searchResults {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #333;
+    }
+    footer {
+      background-color: #003845;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+    footer a {
+      color: #94d2bd;
+      margin: 0 10px;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      header, .search-bar, nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav a {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const socket = io("http://localhost:5000");
+
+      const videoCallLink = document.querySelector("a[href='/video-call.html']");
+      videoCallLink.addEventListener("click", (e) => {
+        const trialKey = "trialStartDate";
+        const savedDate = localStorage.getItem(trialKey);
+        const now = new Date();
+
+        if (!savedDate) {
+          localStorage.setItem(trialKey, now.toISOString());
+        } else {
+          const diffInMs = now - new Date(savedDate);
+          const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+          if (diffInDays > 3) {
+            e.preventDefault();
+            alert("⚠️ Your free trial has ended. Please make a payment to continue.");
+            window.location.href = "/payment.html";
+            return;
+          }
+        }
+
+        const user = localStorage.getItem("userRole") || localStorage.getItem("studentName") || localStorage.getItem("teacherName");
+        if (!user) {
+          e.preventDefault();
+          alert("⚠️ Please register or log in to access the call.");
+          window.location.href = "/register.html";
+        }
+      });
+
+      const dashboardLink = document.querySelector("a[href='/dashboard.html']");
+      const role = localStorage.getItem("userRole");
+      if (role === "student") {
+        dashboardLink.textContent = "📋 Student Dashboard";
+        dashboardLink.href = "/dashboard.html?role=student";
+      } else if (role === "teacher") {
+        dashboardLink.textContent = "📋 Teacher Dashboard";
+        dashboardLink.href = "/dashboard.html?role=teacher";
+      }
+
+      const searchInput = document.getElementById("search");
+      const searchResults = document.createElement("div");
+      searchResults.id = "searchResults";
+      document.querySelector("main").appendChild(searchResults);
+
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.trim();
+        if (query.length > 1) {
+          socket.emit("search", query);
+        } else {
+          searchResults.innerHTML = "";
+        }
+      });
+
+      socket.on("search-results", (results) => {
+        if (results.length > 0) {
+          let html = '<strong>Results:</strong> <ul>';
+          html += results.map(r => `<li>${r.userId} (${r.role})</li>`).join('');
+          html += '</ul>';
+          searchResults.innerHTML = html;
+        } else {
+          searchResults.innerHTML = "No results found.";
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <div class="logo">📖 Quran Learn Easy</div>
+    <div class="search-bar">
+      <label for="search">🔍</label>
+      <input type="text" id="search" placeholder="Search...">
+      <nav>
+        <a href="/register.html">Register</a>
+        <a href="/login.html">Login</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/join-call.html">Join Call</a>
+        <a href="/admin-dashboard.html">Admin</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Welcome to Quran Learn Easy</h1>
+    <p>Join Quran classes online with expert teachers. Start your journey with free 3-day trial!</p>
+
+    <section>
+      <h2>Quick Access</h2>
+      <a href="/register.html">📝 Register</a>
+      <a href="/login.html">🔐 Login</a>
+      <a href="/dashboard.html">📋 My Dashboard</a>
+      <a href="/join-call.html">📞 Start Call</a>
+      <a href="/admin-dashboard.html">🛠 Admin Panel</a>
+      <a href="/contact.html">📬 Contact Us</a>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Quran Learn Easy. All rights reserved.</p>
+    <p>
+      <a href="/about.html">About</a> |
+      <a href="/privacy.html">Privacy</a> |
+      <a href="/terms.html">Terms</a> |
+      <a href="/contact.html">Contact</a>
+    </p>
+  </footer>
+</body>
+</html>

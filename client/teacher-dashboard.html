@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📘 Teacher Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      padding: 40px;
+    }
+
+    h2 {
+      color: #005f73;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      background-color: #008891;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #005f73;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #messageBox {
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📘 Teacher Dashboard</h2>
+
+    <!-- Success Message -->
+    <div id="messageBox"></div>
+
+    <!-- Home + Logout Buttons -->
+    <a href="index.html"><button>🏠 Go to Home Page</button></a>
+    <button onclick="logout()">🚪 Logout</button>
+
+    <!-- Video Call Form -->
+    <form id="callForm" style="margin-top: 30px;">
+      <input type="text" id="roomId" placeholder="Enter Room ID" required />
+      <button type="submit">📞 Start Video Call</button>
+    </form>
+  </div>
+
+  <script>
+    // ✅ Check Authentication
+    if (!localStorage.getItem("authToken")) {
+      window.location.href = "/login.html";
+    }
+
+    const role = localStorage.getItem("userRole");
+    if (!role || role !== "teacher") {
+      window.location.href = "/login.html";
+    }
+
+    // ✅ Show success message if registered
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+
+    if (message === "success") {
+      document.getElementById("messageBox").innerHTML = `
+        <p style="color: green; font-weight: bold;">
+          ✅ Registration successful. We will contact you shortly.
+        </p>
+      `;
+    }
+
+    // ✅ Handle Start Call
+    document.getElementById("callForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const roomId = document.getElementById("roomId").value.trim();
+      if (roomId) {
+        window.location.href = `/video-call.html?room=${roomId}`;
+      } else {
+        alert("⚠️ Please enter a valid Room ID.");
+      }
+    });
+
+    // 🔒 Logout Function
+    function logout() {
+      localStorage.clear();
+      alert("You have been logged out.");
+      window.location.href = "/login.html";
+    }
+  </script>
+</body>
+</html>

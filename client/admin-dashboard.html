@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    button {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Admin Dashboard - Active Users</h2>
+  <p><strong>Logged in as:</strong> <span id="loggedRole"></span></p>
+  <table>
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Socket ID</th>
+        <th>Role</th>
+        <th>Room</th>
+        <th>Duration</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody"></tbody>
+  </table>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const role = localStorage.getItem("userRole");
+    document.getElementById("loggedRole").innerText = role || "unknown";
+
+    const socket = io("http://localhost:5000");
+    const tableBody = document.getElementById("userTableBody");
+    const timers = {};
+
+    function updateStopwatch(socketId) {
+      const el = document.getElementById(`duration-${socketId}`);
+      if (!el) return;
+      let seconds = parseInt(el.getAttribute("data-seconds"));
+      seconds++;
+      el.setAttribute("data-seconds", seconds);
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      el.innerText = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    socket.emit("get-active-users");
+    socket.on("active-users", (users) => {
+      tableBody.innerHTML = "";
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.userId}</td>
+          <td>${user.socketId}</td>
+          <td>${user.role}</td>
+          <td>${user.roomId}</td>
+          <td id="duration-${user.socketId}" data-seconds="${user.duration}">${formatTime(user.duration)}</td>
+          <td><button onclick="disconnectUser('${user.socketId}', '${user.userId}', '${user.roomId}')">Disconnect</button></td>
+        `;
+        tableBody.appendChild(tr);
+
+        if (!timers[user.socketId]) {
+          timers[user.socketId] = setInterval(() => updateStopwatch(user.socketId), 1000);
+        }
+      });
+    });
+
+    function disconnectUser(socketId, userId, roomId) {
+      socket.emit("admin-disconnect-user", { userId, roomId });
+      const row = document.getElementById(`duration-${socketId}`).parentElement;
+      row.remove();
+    }
+
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Quran Learn Easy</title>
+  <link rel="stylesheet" href="css/login.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    form input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    form button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    form button:hover {
+      background-color: #45a049;
+    }
+
+    #response {
+      margin-top: 15px;
+      color: red;
+      font-size: 14px;
+    }
+
+    .success-msg {
+      color: green;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    a {
+      display: block;
+      margin-top: 10px;
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+
+    <!-- ✅ Success Message (after logout) -->
+    <div id="successMessage" class="success-msg"></div>
+
+    <form id="loginForm">
+      <input type="email" id="email" name="email" placeholder="Email Address" required>
+      <input type="password" id="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <a href="forget-password.html">Forgot Password?</a>
+    </form>
+
+    <div id="response"></div>
+  </div>
+
+  <script>
+    // ✅ Show logout success message
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("logout") === "success") {
+      document.getElementById("successMessage").innerText = "✅ You have successfully logged out.";
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem("authToken", data.token);
+          localStorage.setItem("userRole", data.role);
+
+          if (data.role === "student") {
+            window.location.href = "/dashboard.html";
+          } else if (data.role === "teacher") {
+            window.location.href = "/teacher-dashboard.html";
+          } else if (data.role === "admin") {
+            window.location.href = "/admin.html";
+          } else {
+            alert("Unknown user role");
+          }
+        } else {
+          document.getElementById("response").innerText = data.message || "Login failed";
+        }
+      } catch (err) {
+        console.error("Login failed:", err);
+        document.getElementById("response").innerText = "Something went wrong. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>
