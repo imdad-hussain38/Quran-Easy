@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join Call & Payment</title>
+  <style>
+    body { text-align: center; }
+    video { width: 300px; margin: 10px; border: 2px solid black; }
+    audio { display: block; margin: 10px auto; }
+    input, button, select { margin: 5px; padding: 5px; }
+    #form-container { margin-bottom: 20px; }
+    #payment-section { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
+    form { display: flex; flex-direction: column; align-items: center; }
+    form input, form button { width: 80%; max-width: 300px; }
+  </style>
+</head>
+<body>
+  <h2>Join Video/Audio Call Room</h2>
+  <div id="form-container">
+    <input type="text" id="studentName" placeholder="Student Name">
+    <input type="text" id="teacherName" placeholder="Teacher Name">
+    <select id="callType">
+      <option value="video">Video Call</option>
+      <option value="audio">Audio Call</option>
+    </select>
+    <button onclick="checkTrialAndJoin()">Join Call</button>
+    <button onclick="toggleVideo()">Toggle Video</button>
+    <button onclick="toggleAudio()">Toggle Audio</button>
+  </div>
+
+  <video id="localVideo" autoplay muted></video>
+  <video id="remoteVideo" autoplay></video>
+  <audio id="localAudio" autoplay muted hidden></audio>
+  <audio id="remoteAudio" autoplay hidden></audio>
+
+  
+  
+  
+  
+  
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedStudent = localStorage.getItem("studentName");
+      const savedTeacher = localStorage.getItem("teacherName");
+      if (savedStudent) document.getElementById("studentName").value = savedStudent;
+      if (savedTeacher) document.getElementById("teacherName").value = savedTeacher;
+    });
+
+    let socket, roomId, userId, role, callType;
+    let localStream;
+    let peerConnection;
+    let videoTrack, audioTrack;
+
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text)
+        .then(() => alert("✅ Copied: " + text))
+        .catch(err => alert("❌ Failed to copy"));
+    }
+
+    function checkTrialAndJoin() {
+      const trialKey = "trialStartDate";
+      const savedDate = localStorage.getItem(trialKey);
+      const now = new Date();
+
+      if (!savedDate) {
+        localStorage.setItem(trialKey, now.toISOString());
+        joinRoom();
+        return;
+      }
+
+      const diffInMs = now - new Date(savedDate);
+      const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+      if (diffInDays <= 3) {
+        joinRoom();
+      } else {
+        alert("Your 3-day free trial has ended. Please pay to continue.");
+        document.getElementById("payment-section").scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function joinRoom() {
+      const student = document.getElementById("studentName").value.trim();
+      const teacher = document.getElementById("teacherName").value.trim();
+      callType = document.getElementById("callType").value;
+
+      if (!student || !teacher) {
+        alert("Please enter both student and teacher name");
+        return;
+      }
+
+      localStorage.setItem("studentName", student);
+      localStorage.setItem("teacherName", teacher);
+
+      roomId = `room_${student}_${teacher}`;
+      userId = "user_" + Math.floor(Math.random() * 10000);
+      role = localStorage.getItem("userRole") || "student";
+
+      localStorage.setItem("roomId", roomId);
+
+      socket = io("http://localhost:5000", {
+        query: { roomId, userId, role }
+      });
+
+      socket.emit("join-room", { roomId, userId, role });
+
+      socket.on("user-connected", (remoteUserId) => {
+        console.log("User connected:", remoteUserId);
+        callUser(remoteUserId);
+      });
+
+      socket.on("signal", async ({ userId: remoteUserId, signalData }) => {
+        if (signalData.type === "offer") {
+          await createAnswer(signalData, remoteUserId);
+        } else if (signalData.type === "answer") {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(signalData));
+        } else if (signalData.candidate) {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(signalData));
+        }
+      });
+
+      // ✅ Handle forced disconnect by admin
+      socket.on("force-disconnect", () => {
+        alert("⚠️ You have been disconnected by admin.");
+        if (peerConnection) peerConnection.close();
+        if (socket) socket.disconnect();
+        window.location.href = "/login.html";
+      });
+
+      startStream();
+    }
+
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    const localAudio = document.getElementById("localAudio");
+    const remoteAudio = document.getElementById("remoteAudio");
+
+    const config = {
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    };
+
+    async function startStream() {
+      const constraints = callType === "audio" ? { audio: true, video: false } : { audio: true, video: true };
+      localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (constraints.video) {
+        localVideo.srcObject = localStream;
+        videoTrack = localStream.getVideoTracks()[0];
+      } else {
+        localAudio.srcObject = localStream;
+      }
+      audioTrack = localStream.getAudioTracks()[0];
+    }
+
+    function toggleVideo() {
+      if (videoTrack) videoTrack.enabled = !videoTrack.enabled;
+    }
+
+    function toggleAudio() {
+      if (audioTrack) audioTrack.enabled = !audioTrack.enabled;
+    }
+
+    async function callUser(remoteUserId) {
+      peerConnection = new RTCPeerConnection(config);
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit("signal", {
+            room: roomId,
+            userId,
+            signalData: event.candidate
+          });
+        }
+      };
+
+      peerConnection.ontrack = (event) => {
+        const stream = event.streams[0];
+        if (stream.getVideoTracks().length > 0) {
+          remoteVideo.srcObject = stream;
+        }
+        if (stream.getAudioTracks().length > 0) {
+          remoteAudio.srcObject = stream;
+        }
+      };
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+
+      socket.emit("signal", {
+        room: roomId,
+        userId,
+        signalData: offer
+      });
+    }
+
+    async function createAnswer(offer, remoteUserId) {
+      peerConnection = new RTCPeerConnection(config);
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit("signal", {
+            room: roomId,
+            userId,
+            signalData: event.candidate
+          });
+        }
+      };
+
+      peerConnection.ontrack = (event) => {
+        const stream = event.streams[0];
+        if (stream.getVideoTracks().length > 0) {
+          remoteVideo.srcObject = stream;
+        }
+        if (stream.getAudioTracks().length > 0) {
+          remoteAudio.srcObject = stream;
+        }
+      };
+
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+
+      socket.emit("signal", {
+        room: roomId,
+        userId,
+        signalData: answer
+      });
+    }
+
+    document.getElementById("paymentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payerName = document.getElementById("payerName").value;
+      const transactionId = document.getElementById("transactionId").value;
+      const amount = document.getElementById("amount").value;
+      const course = document.getElementById("course").value;
+
+      const res = await fetch("http://localhost:5000/api/payment/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payerName, transactionId, amount, course })
+      });
+      const data = await res.json();
+      document.getElementById("paymentResponse").innerText = data.message || "Submitted.";
+    });
+  </script>
+</body>
+</html>

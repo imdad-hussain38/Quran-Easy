@@ -1,0 +1,65 @@
+/* Login & Register Shared Styles (آپ کی style.css میں add کر دیں) */
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #00b4db, #0083b0);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.container {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input, select, button {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+input:focus, select:focus {
+  border-color: #00b4db;
+  outline: none;
+}
+
+button {
+  background-color: #00b4db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: #0083b0;
+}
+
+#response {
+  margin-top: 10px;
+  color: red;
+  text-align: center;
+  font-weight: bold;
+}

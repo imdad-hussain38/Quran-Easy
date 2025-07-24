@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ہم سے رابطہ کریں</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --text-color: #333;
+            --light-bg: #f9f9f9;
+            --white: #ffffff;
+            --shadow: 0 0 10px rgba(0,0,0,0.1);
+            --border-radius: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .contact-page {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .contact-info, .contact-form {
+            flex: 1;
+            min-width: 300px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .contact-info p {
+            margin-bottom: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .info-item i {
+            margin-left: 10px;
+            color: var(--primary-color);
+        }
+        
+        .email-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid var(--primary-color);
+        }
+        
+        .email-link:hover {
+            color: var(--white);
+            background-color: var(--primary-color);
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border 0.3s ease;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 14px 25px;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            width: 100%;
+        }
+        
+        button:hover {
+            background: var(--primary-hover);
+        }
+        
+        @media (max-width: 768px) {
+            .contact-page {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .contact-info, .contact-form {
+                padding: 20px;
+            }
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary-hover);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ہم سے رابطہ کریں</h1>
+        
+        <div class="contact-page">
+            <div class="contact-info">
+                <h2>رابطے کی معلومات</h2>
+                <p>آپ کے سوالات یا آراء کے لیے ہم ہمیشہ موجود ہیں! ہماری ٹیم آپ کی ہر ممکن مدد کے لیے تیار ہے۔</p>
+                
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <a href="mailto:imdadhu7@gmail.com?subject=ویب سائٹ سے رابطہ&body=محترم ٹیم،%0D%0A%0D%0Aمیں آپ سے درج ذیل معاملے پر رابطہ کرنا چاہتا/چاہتی ہوں:%0D%0A%0D%0Aآپ کا شکریہ،%0D%0A[اپنا نام]" class="email-link">imdadhu7@gmail.com</a>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+92 123 4567890</span>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>کراچی، پاکستان</span>
+                </div>
+                
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            
+            <div class="contact-form">
+                <h2>ہمیں پیغام بھیجیں</h2>
+                <form action="mailto:imdadhu7@gmail.com" method="post" enctype="text/plain">
+                    <div class="form-group">
+                        <label for="name">آپ کا نام</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">آپ کا ای میل</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">موضوع</label>
+                        <input type="text" id="subject" name="subject" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">پیغام</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    
+                    <button type="submit">پیغام بھیجیں</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
