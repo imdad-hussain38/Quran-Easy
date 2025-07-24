@@ -15,6 +15,11 @@
 
     .container {
       padding: 40px;
+      background-color: white;
+      margin: 50px auto;
+      max-width: 500px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
@@ -42,6 +47,7 @@
       margin: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      width: 80%;
     }
 
     #messageBox {
@@ -68,7 +74,7 @@
   </div>
 
   <script>
-    // ✅ Check Authentication
+    // ✅ Authentication check
     if (!localStorage.getItem("authToken")) {
       window.location.href = "/login.html";
     }
@@ -78,7 +84,13 @@
       window.location.href = "/login.html";
     }
 
-    // ✅ Show success message if registered
+    // ✅ Prevent back after logout
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function () {
+      window.location.href = "/login.html";
+    };
+
+    // ✅ Success message via query param
     const params = new URLSearchParams(window.location.search);
     const message = params.get("message");
 
@@ -88,20 +100,27 @@
           ✅ Registration successful. We will contact you shortly.
         </p>
       `;
+      // ✅ Remove message param from URL
+      const url = new URL(window.location);
+      url.searchParams.delete("message");
+      window.history.replaceState({}, document.title, url.pathname);
     }
 
-    // ✅ Handle Start Call
+    // ✅ Handle Start Call with Room ID Validation
     document.getElementById("callForm").addEventListener("submit", function(e) {
       e.preventDefault();
       const roomId = document.getElementById("roomId").value.trim();
-      if (roomId) {
-        window.location.href = `/video-call.html?room=${roomId}`;
-      } else {
-        alert("⚠️ Please enter a valid Room ID.");
+
+      const isValidRoomId = /^[a-zA-Z0-9_-]{3,20}$/.test(roomId);
+      if (!isValidRoomId) {
+        alert("⚠️ Room ID must be 3–20 characters, no spaces.");
+        return;
       }
+
+      window.location.href = `/video-call.html?room=${roomId}`;
     });
 
-    // 🔒 Logout Function
+    // ✅ Logout Function
     function logout() {
       localStorage.clear();
       alert("You have been logged out.");
